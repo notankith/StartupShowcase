@@ -77,6 +77,18 @@ export default async function IdeaDetailPage({ params }: { params: any }) {
                   {idea.category}
                 </span>
                 <h1 className="text-4xl font-bold text-foreground mb-4">{idea.title}</h1>
+                {/* Founder Program */}
+                {idea.founder_program && (
+                  <p className="text-sm text-muted-foreground mb-2">Founder Program: {idea.founder_program}</p>
+                )}
+                {/* Mentor Assigned */}
+                {idea.mentor_assigned && (
+                  <p className="text-sm text-muted-foreground mb-2">Mentor: {idea.mentor_assigned}</p>
+                )}
+                {/* Stage */}
+                {idea.stage && (
+                  <p className="text-sm text-muted-foreground mb-2">Stage: {idea.stage}</p>
+                )}
               </div>
               {idea.is_featured && (
                 <div className="flex items-center gap-2 bg-accent text-white text-sm font-semibold px-4 py-2 rounded-lg">
@@ -120,6 +132,24 @@ export default async function IdeaDetailPage({ params }: { params: any }) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="md:col-span-2 space-y-8">
+              {/* Logo */}
+              {idea.logo_url ? (
+                <div className="flex justify-center">
+                  <img
+                    src={idea.logo_url}
+                    alt={idea.title + ' logo'}
+                    className="max-h-32 w-auto object-contain rounded"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                  />
+                </div>
+              ) : (
+                <div className="flex justify-center">
+                  <div className="h-32 w-32 rounded bg-muted flex items-center justify-center text-xl font-semibold text-muted-foreground">
+                    {idea.title.charAt(0).toUpperCase()}
+                  </div>
+                </div>
+              )}
+
               {/* Problem Statement */}
               <Card>
                 <CardHeader>
@@ -160,6 +190,48 @@ export default async function IdeaDetailPage({ params }: { params: any }) {
                   </CardHeader>
                   <CardContent>
                     <p className="text-foreground leading-relaxed whitespace-pre-wrap">{idea.team_description}</p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Achievements / Traction */}
+              {idea.achievements && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-xl">Achievements / Traction</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-foreground leading-relaxed whitespace-pre-wrap">{idea.achievements}</p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Skills Needed */}
+              {idea.skills_needed && idea.skills_needed.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-xl">Skills Needed</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      {idea.skills_needed.map((skill: string) => (
+                        <span key={skill} className="text-xs bg-secondary text-secondary-foreground px-3 py-1 rounded-full">
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Call to Action */}
+              {idea.call_to_action && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-xl">Call to Action</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-foreground leading-relaxed whitespace-pre-wrap">{idea.call_to_action}</p>
                   </CardContent>
                 </Card>
               )}

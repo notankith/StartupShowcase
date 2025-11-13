@@ -43,6 +43,13 @@ export default function EditIdeaPage({ params }: { params: any }) {
     category: "",
     tags: "",
     whatsapp_group_url: "",
+    mentor_assigned: "",
+    achievements: "",
+    skills_needed: "",
+    call_to_action: "",
+    founder_program: "",
+    logo_url: "",
+    stage: "Ideation",
   })
   const [idea, setIdea] = useState<any>(null)
   const [files, setFiles] = useState<any[]>([])
@@ -84,6 +91,13 @@ export default function EditIdeaPage({ params }: { params: any }) {
         category: data.category,
         tags: (data.tags || []).join(", "),
         whatsapp_group_url: data.whatsapp_group_url || "",
+        mentor_assigned: data.mentor_assigned || "",
+        achievements: data.achievements || "",
+        skills_needed: (data.skills_needed || []).join(", "),
+        call_to_action: data.call_to_action || "",
+        founder_program: data.founder_program || "",
+        logo_url: data.logo_url || "",
+        stage: data.stage || "Ideation",
       })
 
       // Fetch files
@@ -114,6 +128,11 @@ export default function EditIdeaPage({ params }: { params: any }) {
         .map((tag) => tag.trim())
         .filter((tag) => tag.length > 0)
 
+      const skillsNeeded = formData.skills_needed
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0)
+
       const { error: updateError } = await supabase
         .from("ideas")
         .update({
@@ -127,6 +146,13 @@ export default function EditIdeaPage({ params }: { params: any }) {
           status: asDraft ? "draft" : "submitted",
           updated_at: new Date().toISOString(),
           whatsapp_group_url: formData.whatsapp_group_url || null,
+          mentor_assigned: formData.mentor_assigned || null,
+          achievements: formData.achievements || null,
+          skills_needed: skillsNeeded,
+          call_to_action: formData.call_to_action || null,
+          founder_program: formData.founder_program || null,
+          logo_url: formData.logo_url || null,
+          stage: formData.stage,
         })
         .eq("id", unwrappedParams.id)
 
@@ -294,6 +320,101 @@ export default function EditIdeaPage({ params }: { params: any }) {
                     onChange={handleChange}
                   />
                   <p className="text-xs text-muted-foreground mt-2">Share your WhatsApp group invite link for community collaboration</p>
+                </div>
+
+                {/* Founder Year / Program */}
+                <div>
+                  <Label htmlFor="founder_program">Founder Year / Program</Label>
+                  <Input
+                    id="founder_program"
+                    name="founder_program"
+                    placeholder="e.g. 3rd Year B.Tech CSE"
+                    value={formData.founder_program}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                {/* Mentor Assigned */}
+                <div>
+                  <Label htmlFor="mentor_assigned">Mentor Assigned</Label>
+                  <Input
+                    id="mentor_assigned"
+                    name="mentor_assigned"
+                    placeholder="Mentor name (optional)"
+                    value={formData.mentor_assigned}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                {/* Achievements / Traction */}
+                <div>
+                  <Label htmlFor="achievements">Achievements / Traction</Label>
+                  <textarea
+                    id="achievements"
+                    name="achievements"
+                    placeholder="Milestones, users, revenue, competitions won, etc."
+                    rows={3}
+                    value={formData.achievements}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-border rounded-lg font-sans"
+                  />
+                </div>
+
+                {/* Skills Needed */}
+                <div>
+                  <Label htmlFor="skills_needed">Skills Needed</Label>
+                  <Input
+                    id="skills_needed"
+                    name="skills_needed"
+                    placeholder="frontend, marketing, ai (comma-separated)"
+                    value={formData.skills_needed}
+                    onChange={handleChange}
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">Separate skills with commas</p>
+                </div>
+
+                {/* Call to Action */}
+                <div>
+                  <Label htmlFor="call_to_action">Call to Action Text</Label>
+                  <Input
+                    id="call_to_action"
+                    name="call_to_action"
+                    placeholder="Join us to build the future of edtech!"
+                    value={formData.call_to_action}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                {/* Logo URL */}
+                <div>
+                  <Label htmlFor="logo_url">Logo Image URL</Label>
+                  <Input
+                    id="logo_url"
+                    name="logo_url"
+                    type="url"
+                    placeholder="https://.../logo.png"
+                    value={formData.logo_url}
+                    onChange={handleChange}
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">Provide a direct image URL. Leave blank to use a placeholder.</p>
+                </div>
+
+                {/* Stage */}
+                <div>
+                  <Label htmlFor="stage">Stage *</Label>
+                  <select
+                    id="stage"
+                    name="stage"
+                    value={formData.stage}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-3 py-2 border border-border rounded-lg font-sans"
+                  >
+                    <option value="Ideation">Ideation</option>
+                    <option value="Prototype">Prototype</option>
+                    <option value="MVP">MVP</option>
+                    <option value="Market-ready">Market-ready</option>
+                  </select>
                 </div>
 
                 <div className="border-t pt-6">
