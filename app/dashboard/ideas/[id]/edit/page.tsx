@@ -1,0 +1,336 @@
+"use client"
+
+import React from "react"
+
+import { useEffect, useState } from "react"
+import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
+import { Navbar } from "@/components/navbar"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import Link from "next/link"
+import { ChevronLeft, Trash2 } from "lucide-react"
+import { FileUpload } from "@/components/file-upload"
+
+const CATEGORIES = [
+  "Technology",
+  "Healthcare",
+  "Education",
+  "Finance",
+  "Sustainability",
+  "E-commerce",
+  "Social Impact",
+  "Food & Agriculture",
+  "Transportation",
+  "Entertainment",
+  "Real Estate",
+  "Energy",
+]
+
+export default function EditIdeaPage({ params }: { params: any }) {
+  // `params` may be a Promise in the app-router when this component is rendered
+  // as a client component. Next.js recommends unwrapping it with React.use().
+  // Use a safe fallback if React.use is not available.
+  const unwrappedParams = typeof (React as any).use === "function" ? (React as any).use(params) : params
+  const [formData, setFormData] = useState({
+    title: "",
+    problem_statement: "",
+    solution: "",
+    market_opportunity: "",
+    team_description: "",
+    category: "",
+    tags: "",
+  })
+  const [idea, setIdea] = useState<any>(null)
+  const [files, setFiles] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const router = useRouter()
+  const supabase = createClient()
+
+  useEffect(() => {
+    const loadIdea = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) {
+        router.push("/auth/login")
+        return
+      }
+
+      const { data, error: fetchError } = await supabase
+        .from("ideas")
+        .select("*")
+        .eq("id", unwrappedParams.id)
+        .eq("user_id", user.id)
+        .single()
+
+      if (fetchError || !data) {
+        router.push("/dashboard")
+        return
+      }
+
+      setIdea(data)
+      setFormData({
+        title: data.title,
+        problem_statement: data.problem_statement,
+        solution: data.solution,
+        market_opportunity: data.market_opportunity || "",
+        team_description: data.team_description || "",
+        category: data.category,
+        tags: (data.tags || []).join(", "),
+      })
+
+      // Fetch files
+      const { data: filesData } = await supabase.from("idea_files").select("*").eq("idea_id", unwrappedParams.id)
+
+      setFiles(filesData || [])
+      setLoading(false)
+    }
+
+    loadIdea()
+  }, [unwrappedParams.id, supabase, router])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    })
+  }
+
+  const handleSubmit = async (e: React.FormEvent, asDraft = false) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setError(null)
+
+    try {
+      const tags = formData.tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter((tag) => tag.length > 0)
+
+      const { error: updateError } = await supabase
+        .from("ideas")
+        .update({
+          title: formData.title,
+          problem_statement: formData.problem_statement,
+          solution: formData.solution,
+          market_opportunity: formData.market_opportunity,
+          team_description: formData.team_description,
+          category: formData.category,
+          tags: tags,
+          status: asDraft ? "draft" : "submitted",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", unwrappedParams.id)
+
+      if (updateError) throw updateError
+
+      router.push("/dashboard")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update idea")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const deleteFile = async (fileId: string) => {
+    try {
+      const { error } = await supabase.from("idea_files").delete().eq("id", fileId)
+
+      if (error) throw error
+      setFiles(files.filter((f) => f.id !== fileId))
+    } catch (err) {
+      setError("Failed to delete file")
+    }
+  }
+
+  const handleFileUploaded = (newFile: any) => {
+    setFiles([...files, newFile])
+  }
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-background">
+        <Navbar />
+        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </main>
+    )
+  }
+
+  return (
+    <main className="min-h-screen bg-background">
+      <Navbar />
+
+      <div className="px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-3xl mx-auto">
+          <Link href="/dashboard" className="flex items-center gap-2 text-primary hover:underline text-sm mb-8">
+            <ChevronLeft className="w-4 h-4" />
+            Back to Dashboard
+          </Link>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-3xl">Edit Idea</CardTitle>
+              <CardDescription>
+                {idea?.status === "approved"
+                  ? "Your idea has been approved"
+                  : idea?.status === "submitted"
+                    ? "Your idea is under review"
+                    : "Complete your idea and submit for review"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form className="space-y-6">
+                {/* Title */}
+                <div>
+                  <Label htmlFor="title">Idea Title *</Label>
+                  <Input id="title" name="title" value={formData.title} onChange={handleChange} required />
+                </div>
+
+                {/* Category */}
+                <div>
+                  <Label htmlFor="category">Category *</Label>
+                  <select
+                    id="category"
+                    name="category"
+                    value={formData.category}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-3 py-2 border border-border rounded-lg font-sans"
+                  >
+                    <option value="">Select a category</option>
+                    {CATEGORIES.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Problem Statement */}
+                <div>
+                  <Label htmlFor="problem_statement">The Problem *</Label>
+                  <textarea
+                    id="problem_statement"
+                    name="problem_statement"
+                    rows={4}
+                    value={formData.problem_statement}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-3 py-2 border border-border rounded-lg font-sans"
+                  />
+                </div>
+
+                {/* Solution */}
+                <div>
+                  <Label htmlFor="solution">The Solution *</Label>
+                  <textarea
+                    id="solution"
+                    name="solution"
+                    rows={4}
+                    value={formData.solution}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-3 py-2 border border-border rounded-lg font-sans"
+                  />
+                </div>
+
+                {/* Market Opportunity */}
+                <div>
+                  <Label htmlFor="market_opportunity">Market Opportunity</Label>
+                  <textarea
+                    id="market_opportunity"
+                    name="market_opportunity"
+                    rows={3}
+                    value={formData.market_opportunity}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-border rounded-lg font-sans"
+                  />
+                </div>
+
+                {/* Team Description */}
+                <div>
+                  <Label htmlFor="team_description">Team</Label>
+                  <textarea
+                    id="team_description"
+                    name="team_description"
+                    rows={3}
+                    value={formData.team_description}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-border rounded-lg font-sans"
+                  />
+                </div>
+
+                {/* Tags */}
+                <div>
+                  <Label htmlFor="tags">Tags</Label>
+                  <Input
+                    id="tags"
+                    name="tags"
+                    placeholder="innovation, startup, tech (comma-separated)"
+                    value={formData.tags}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="border-t pt-6">
+                  <Label className="text-base font-semibold mb-4 block">Supporting Materials</Label>
+                  <FileUpload ideaId={unwrappedParams.id} onFileUploaded={handleFileUploaded} disabled={isSubmitting} />
+                </div>
+
+                {/* Files Section */}
+                {files.length > 0 && (
+                  <div>
+                    <Label>Attached Files</Label>
+                    <div className="space-y-2 mt-2">
+                      {files.map((file) => (
+                        <div key={file.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                          <div>
+                            <p className="font-medium text-foreground">{file.file_name}</p>
+                            <p className="text-xs text-muted-foreground">{(file.file_size / 1024).toFixed(2)} KB</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => deleteFile(file.id)}
+                            className="text-error hover:bg-error/10 p-2 rounded"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {error && <p className="text-sm text-error">{error}</p>}
+
+                <div className="flex gap-3 flex-wrap">
+                  <Button
+                    type="button"
+                    onClick={(e) => handleSubmit(e, true)}
+                    variant="outline"
+                    disabled={isSubmitting}
+                  >
+                    Save Draft
+                  </Button>
+                  <Button type="button" onClick={(e) => handleSubmit(e, false)} disabled={isSubmitting}>
+                    {isSubmitting ? "Submitting..." : "Submit for Review"}
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => router.push("/dashboard")}>
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </main>
+  )
+}
