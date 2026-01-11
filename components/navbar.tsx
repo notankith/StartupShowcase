@@ -46,6 +46,9 @@ export function Navbar() {
             <Link href="/dashboard/ideas/new" className="text-foreground hover:text-primary transition whitespace-nowrap">
               Submit Idea
             </Link>
+                        <Link href="/gcudl" className="text-foreground hover:text-primary transition whitespace-nowrap">
+              GCUDL Lab
+            </Link>
           </div>
 
           <div className="hidden md:flex items-center gap-2">
