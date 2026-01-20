@@ -68,11 +68,9 @@ export async function POST(request: NextRequest) {
     let uploadError: any = null
 
     // Use admin client for storage upload to avoid permission issues
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.SUPABASE_URL) {
-      return NextResponse.json(
-        { error: "Server misconfiguration: missing SUPABASE_SERVICE_ROLE_KEY or SUPABASE_URL" },
-        { status: 500 }
-      )
+    // Ensure R2 is configured
+    if (!process.env.R2_ENDPOINT || !process.env.R2_BUCKET || !process.env.R2_ACCESS_KEY || !process.env.R2_SECRET_KEY) {
+      return NextResponse.json({ error: "Server misconfiguration: missing R2 configuration" }, { status: 500 })
     }
 
     const admin = createAdminClient()
@@ -111,14 +109,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Get public URL (Supabase storage public settings apply)
-    const { data: publicData } = admin.storage.from(bucket).getPublicUrl(filename)
-    const fileUrl = publicData?.publicUrl || ""
+    const pub = admin.storage.from(bucket).getPublicUrl(filename)
+    const fileUrl = (pub?.data?.publicUrl) || (typeof pub === 'string' ? pub : await pub)
 
     // Safety: ensure we never persist data: (base64) URLs. If storage client
     // unexpectedly returns a data: URL (shouldn't for Supabase Storage public
     // buckets), abort and ask the user to re-upload. This prevents re-introducing
     // base64 URLs into the DB.
-    if (fileUrl.startsWith("data:")) {
+    if (fileUrl && String(fileUrl).startsWith("data:")) {
       console.error("Upload produced data: URL — refusing to persist base64 URL", { fileUrl, filename })
       return NextResponse.json({ error: "Storage returned a data URL; aborting to avoid persisting base64. Please re-upload the file." }, { status: 500 })
     }

@@ -3,7 +3,7 @@
 import React from "react"
 
 import { useEffect, useState } from "react"
-import { createClient } from "@/lib/supabase/client"
+// server APIs used instead of client-side supabase
 import { useRouter } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Button } from "@/components/ui/button"
@@ -57,58 +57,47 @@ export default function EditIdeaPage({ params }: { params: any }) {
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
 
   useEffect(() => {
     const loadIdea = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) {
-        router.push("/auth/login")
-        return
-      }
+      try {
+        const res = await fetch(`/api/ideas/${unwrappedParams.id}`, { credentials: "include" })
+        if (!res.ok) {
+          router.push("/dashboard")
+          return
+        }
+        const payload = await res.json()
+        const data = payload.data.idea
+        const filesData = payload.data.files || []
 
-      const { data, error: fetchError } = await supabase
-        .from("ideas")
-        .select("*")
-        .eq("id", unwrappedParams.id)
-        .eq("user_id", user.id)
-        .single()
+        setIdea(data)
+        setFormData({
+          title: data.title,
+          problem_statement: data.problem_statement,
+          solution: data.solution,
+          market_opportunity: data.market_opportunity || "",
+          team_description: data.team_description || "",
+          category: data.category,
+          tags: (data.tags || []).join(", "),
+          whatsapp_group_url: data.whatsapp_group_url || "",
+          mentor_assigned: data.mentor_assigned || "",
+          achievements: data.achievements || "",
+          skills_needed: (data.skills_needed || []).join(", "),
+          call_to_action: data.call_to_action || "",
+          founder_program: data.founder_program || "",
+          logo_url: data.logo_url || "",
+          stage: data.stage || "Ideation",
+        })
 
-      if (fetchError || !data) {
+        setFiles(filesData)
+        setLoading(false)
+      } catch (e) {
         router.push("/dashboard")
-        return
       }
-
-      setIdea(data)
-      setFormData({
-        title: data.title,
-        problem_statement: data.problem_statement,
-        solution: data.solution,
-        market_opportunity: data.market_opportunity || "",
-        team_description: data.team_description || "",
-        category: data.category,
-        tags: (data.tags || []).join(", "),
-        whatsapp_group_url: data.whatsapp_group_url || "",
-        mentor_assigned: data.mentor_assigned || "",
-        achievements: data.achievements || "",
-        skills_needed: (data.skills_needed || []).join(", "),
-        call_to_action: data.call_to_action || "",
-        founder_program: data.founder_program || "",
-        logo_url: data.logo_url || "",
-        stage: data.stage || "Ideation",
-      })
-
-      // Fetch files
-      const { data: filesData } = await supabase.from("idea_files").select("*").eq("idea_id", unwrappedParams.id)
-
-      setFiles(filesData || [])
-      setLoading(false)
     }
 
     loadIdea()
-  }, [unwrappedParams.id, supabase, router])
+  }, [unwrappedParams.id, router])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
@@ -133,16 +122,18 @@ export default function EditIdeaPage({ params }: { params: any }) {
         .map((s) => s.trim())
         .filter((s) => s.length > 0)
 
-      const { error: updateError } = await supabase
-        .from("ideas")
-        .update({
+      const res = await fetch(`/api/ideas/${unwrappedParams.id}`, {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           title: formData.title,
           problem_statement: formData.problem_statement,
           solution: formData.solution,
           market_opportunity: formData.market_opportunity,
           team_description: formData.team_description,
           category: formData.category,
-          tags: tags,
+          tags,
           status: asDraft ? "draft" : "submitted",
           updated_at: new Date().toISOString(),
           whatsapp_group_url: formData.whatsapp_group_url || null,
@@ -153,10 +144,13 @@ export default function EditIdeaPage({ params }: { params: any }) {
           founder_program: formData.founder_program || null,
           logo_url: formData.logo_url || null,
           stage: formData.stage,
-        })
-        .eq("id", unwrappedParams.id)
+        }),
+      })
 
-      if (updateError) throw updateError
+      if (!res.ok) {
+        const p = await res.json().catch(() => ({}))
+        throw new Error(p?.error || `Update failed (${res.status})`)
+      }
 
       router.push("/dashboard")
     } catch (err) {
@@ -168,10 +162,9 @@ export default function EditIdeaPage({ params }: { params: any }) {
 
   const deleteFile = async (fileId: string) => {
     try {
-      const { error } = await supabase.from("idea_files").delete().eq("id", fileId)
-
-      if (error) throw error
-      setFiles(files.filter((f) => f.id !== fileId))
+      const res = await fetch(`/api/idea-files/${fileId}`, { method: "DELETE", credentials: "include" })
+      if (!res.ok) throw new Error("Delete failed")
+      setFiles(files.filter((f) => f._id !== fileId && f.id !== fileId))
     } catch (err) {
       setError("Failed to delete file")
     }

@@ -1,63 +1,61 @@
-import { createClient } from "./client"
-
+// Lightweight client-facing auth wrapper — talks to the app's API routes
 export async function signUp(email: string, password: string, fullName: string) {
-  const supabase = createClient()
-
-  // Create the user. We avoid specifying an email redirect so we don't force
-  // an email verification redirect flow here. Depending on your Supabase
-  // project's auth settings, an email confirmation may still be required.
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        full_name: fullName,
-      },
-    },
-  })
-
-  if (error) return { data, error }
-
-  // If the signUp did not create a session (common when email confirm is
-  // required), attempt to sign the user in immediately with the same
-  // credentials. If your Supabase project enforces email confirmation this
-  // will fail — in that case you'd need to create the user via a server-side
-  // admin client with email_confirmed set to true.
-  if (!data.session) {
-    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+  try {
+    const res = await fetch("/api/auth/sign-up", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, fullName }),
     })
-
-    // If sign-in failed, surface a clearer error when it's due to email
-    // confirmation. Supabase often returns a generic 'Invalid login
-    // credentials' message which is confusing when the account exists but
-    // hasn't been confirmed.
-    if (signInError) {
-      const msg = /confirm|verify|verification|email/i.test(signInError.message || "")
-        ? "Email confirmation required. Please check your inbox and click the confirmation link."
-        : signInError.message || "Invalid login credentials"
-
-      return { data: signInData ?? data, error: new Error(msg) }
-    }
-
-    return { data: signInData ?? data, error: undefined }
+    const payload = await res.json().catch(() => ({}))
+    if (!res.ok) return { data: null, error: new Error(payload?.error || `Sign up failed (${res.status})`) }
+    return { data: payload, error: undefined }
+  } catch (err: any) {
+    return { data: null, error: new Error(err?.message || "Network error during sign up") }
   }
-
-  return { data, error }
 }
 
 export async function signIn(email: string, password: string) {
-  const supabase = createClient()
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  })
-  return { data, error }
+  try {
+    const res = await fetch("/api/auth/sign-in", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    })
+    const payload = await res.json().catch(() => ({}))
+    if (!res.ok) return { data: null, error: new Error(payload?.error || `Sign in failed (${res.status})`) }
+    // After successful sign-in, poll /api/auth/user until the server-visible
+    // session is available. This avoids navigation races where the next
+    // request doesn't include the freshly-set httpOnly cookie yet.
+    const start = Date.now()
+    const timeout = 3000
+    let user: any = null
+    while (Date.now() - start < timeout) {
+      try {
+        const r = await fetch('/api/auth/user', { credentials: 'include' })
+        if (r.ok) {
+          const p = await r.json().catch(() => ({}))
+          if (p?.user) {
+            user = p.user
+            break
+          }
+        }
+      } catch (e) {
+        // ignore network hiccups
+      }
+      // small backoff
+      await new Promise((r) => setTimeout(r, 200))
+    }
+
+    return { data: payload, error: undefined, user }
+  } catch (err: any) {
+    return { data: null, error: new Error(err?.message || "Network error during sign in") }
+  }
 }
 
 export async function signOut() {
-  const supabase = createClient()
-  const { error } = await supabase.auth.signOut()
-  return { error }
+  const res = await fetch("/api/auth/sign-out", { method: "POST", credentials: "include" })
+  if (!res.ok) return { error: new Error("Sign out failed") }
+  return { error: null }
 }

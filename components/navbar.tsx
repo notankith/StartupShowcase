@@ -12,6 +12,20 @@ export function Navbar() {
   const router = useRouter()
   const supabase = createClient()
 
+  // Return the user object if present (with a few retries), otherwise null
+  async function ensureUserPresent() {
+    for (let i = 0; i < 3; i++) {
+      try {
+        const { data: { user: u } = { data: { user: null } } } = await supabase.auth.getUser()
+        if (u) return u
+      } catch (e) {
+        // ignore
+      }
+      await new Promise((r) => setTimeout(r, 200))
+    }
+    return null
+  }
+
   useEffect(() => {
     const getUser = async () => {
       const {
@@ -43,9 +57,26 @@ export function Navbar() {
             <Link href="/browse" className="text-foreground hover:text-primary transition whitespace-nowrap">
               Startups
             </Link>
-            <Link href="/dashboard/ideas/new" className="text-foreground hover:text-primary transition whitespace-nowrap">
+              <a
+              href="/dashboard/ideas/new"
+              onClick={async (e) => {
+                e.preventDefault()
+                const u = await ensureUserPresent()
+                if (u) {
+                  if (u.role === 'admin') {
+                    window.location.href = '/admin'
+                  } else {
+                    window.location.href = '/dashboard/ideas/new'
+                  }
+                } else {
+                  router.push("/auth/login")
+                }
+              }}
+              className="text-foreground hover:text-primary transition whitespace-nowrap cursor-pointer"
+              role="button"
+            >
               Submit Idea
-            </Link>
+            </a>
           </div>
 
           <div className="hidden md:flex items-center gap-2">
@@ -91,7 +122,19 @@ export function Navbar() {
                     <>
                       <Link href="/events" onClick={() => setIsOpen(false)} className="px-3 py-2 rounded-md hover:bg-muted/50">Events</Link>
                       <Link href="/browse" onClick={() => setIsOpen(false)} className="px-3 py-2 rounded-md hover:bg-muted/50">Startups</Link>
-                      <Link href="/dashboard/ideas/new" onClick={() => setIsOpen(false)} className="px-3 py-2 rounded-md hover:bg-muted/50">Submit Idea</Link>
+                      <a
+                        onClick={async () => {
+                          setIsOpen(false)
+                          const u = await ensureUserPresent()
+                          if (u) {
+                            if (u.role === 'admin') window.location.href = '/admin'
+                            else window.location.href = '/dashboard/ideas/new'
+                          } else router.push("/auth/login")
+                        }}
+                        className="px-3 py-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                      >
+                        Submit Idea
+                      </a>
                       <a href={`mailto:support@startupshowcaseportal.com`} className="px-3 py-2 rounded-md hover:bg-muted/50">Mail</a>
                       <button onClick={() => { setIsOpen(false); handleLogout(); }} className="text-left px-3 py-2 rounded-md hover:bg-muted/50">Logout</button>
                     </>
@@ -99,7 +142,21 @@ export function Navbar() {
                     <>
                       <Link href="/events" onClick={() => setIsOpen(false)} className="px-3 py-2 rounded-md hover:bg-muted/50">Events</Link>
                       <Link href="/browse" onClick={() => setIsOpen(false)} className="px-3 py-2 rounded-md hover:bg-muted/50">Startups</Link>
-                      <Link href="/dashboard/ideas/new" onClick={() => setIsOpen(false)} className="px-3 py-2 rounded-md hover:bg-muted/50">Submit Idea</Link>
+                      <a
+                        href="/dashboard/ideas/new"
+                        onClick={async (e) => {
+                          e.preventDefault()
+                          setIsOpen(false)
+                            const u = await ensureUserPresent()
+                            if (u) {
+                              if (u.role === 'admin') window.location.href = '/admin'
+                              else window.location.href = '/dashboard/ideas/new'
+                            } else router.push("/auth/login")
+                        }}
+                        className="px-3 py-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                      >
+                        Submit Idea
+                      </a>
                       <Link href="/auth/login" className="px-3 py-2 rounded-md hover:bg-muted/50">Log In</Link>
                       <Link href="/auth/sign-up" className="px-3 py-2 rounded-md hover:bg-muted/50">Sign Up</Link>
                       <a href={`mailto:support@startupshowcaseportal.com`} className="px-3 py-2 rounded-md hover:bg-muted/50">Mail</a>

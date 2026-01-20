@@ -55,7 +55,8 @@ export function Footer() {
       <div className="border-t border-border/60">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-xs text-muted-foreground flex items-center justify-between">
           <span>© {new Date().getFullYear()} Garden City University Incubation</span>
-          <span>Built with StartupShowcase</span>
+         <a href="https://ankith.studio" target="_blank" rel="noopener noreferrer">ankith.studio</a>
+
         </div>
       </div>
     </footer>

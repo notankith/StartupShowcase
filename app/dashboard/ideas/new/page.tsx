@@ -79,18 +79,19 @@ export default function NewIdeaPage() {
         .map((s) => s.trim())
         .filter((s) => s.length > 0)
 
-      const { data, error: submitError } = await supabase
-        .from("ideas")
-        .insert({
-          user_id: user.id,
+      // Call server API to create an idea (server-side uses MongoDB)
+      const res = await fetch("/api/ideas", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           title: formData.title,
           problem_statement: formData.problem_statement,
           solution: formData.solution,
           market_opportunity: formData.market_opportunity,
           team_description: formData.team_description,
           category: formData.category,
-          tags: tags,
-          status: "draft",
+          tags,
           whatsapp_group_url: formData.whatsapp_group_url || null,
           mentor_assigned: formData.mentor_assigned || null,
           achievements: formData.achievements || null,
@@ -99,13 +100,17 @@ export default function NewIdeaPage() {
           founder_program: formData.founder_program || null,
           logo_url: formData.logo_url || null,
           stage: formData.stage,
-        })
-        .select()
-        .single()
+        }),
+      })
 
-      if (submitError) throw submitError
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}))
+        throw new Error(payload?.error || `Create failed (${res.status})`)
+      }
 
-      router.push(`/dashboard/ideas/${data.id}/edit`)
+      const payload = await res.json()
+      const created = payload.data
+      router.push(`/dashboard/ideas/${created._id}/edit`)
     } catch (err) {
       // Surface more detailed Supabase/Postgres error info for debugging
       console.error("Create idea failed:", err)

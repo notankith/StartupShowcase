@@ -28,26 +28,29 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const loadData = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      // Fetch current user via server API
+      const uRes = await fetch("/api/auth/user", { credentials: "include" })
+      if (!uRes.ok) {
+        router.push("/auth/login")
+        return
+      }
+      const uPayload = await uRes.json().catch(() => ({}))
+      const user = uPayload.user
       if (!user) {
         router.push("/auth/login")
         return
       }
       setUser(user)
 
-      const { data, error } = await supabase
-        .from("ideas")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-
-      if (error) {
-        console.error("Error fetching ideas:", error)
-      } else {
-        setIdeas(data || [])
+      // Fetch user's ideas from server API
+      const res = await fetch("/api/ideas", { credentials: "include" })
+      if (!res.ok) {
+        console.error("Error fetching ideas:", await res.text().catch(() => ""))
+        setLoading(false)
+        return
       }
+      const payload = await res.json().catch(() => ({ data: [] }))
+      setIdeas(payload.data || [])
       setLoading(false)
     }
 
@@ -57,12 +60,19 @@ export default function DashboardPage() {
   const deleteIdea = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this idea?")) return
 
-    const { error } = await supabase.from("ideas").delete().eq("id", id)
-
-    if (error) {
-      alert("Error deleting idea")
-    } else {
+    try {
+      const res = await fetch(`/api/ideas/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+        credentials: "include",
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        alert(body?.error || "Error deleting idea")
+        return
+      }
       setIdeas(ideas.filter((idea) => idea.id !== id))
+    } catch (e) {
+      alert("Error deleting idea")
     }
   }
 

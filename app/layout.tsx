@@ -14,10 +14,11 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
   },
   generator: 'StartupShowcasePortal',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-  }
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({
