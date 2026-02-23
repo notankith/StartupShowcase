@@ -6,6 +6,25 @@ let __lastUserTime = 0
 const __USER_CACHE_TTL = 1000 // ms
 
 export function createClient() {
+  async function remoteExec(collection: string, state: any, action = "select") {
+    try {
+      const res = await fetch("/api/db", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ collection, action, state }),
+      })
+      if (!res.ok) {
+        const text = await res.text()
+        return { data: null, error: new Error(`Remote exec failed: ${res.status} ${text}`) }
+      }
+      const json = await res.json()
+      return json
+    } catch (err: any) {
+      return { data: null, error: err }
+    }
+  }
+
   return {
     auth: {
       async getUser() {
@@ -31,6 +50,63 @@ export function createClient() {
           return { data: { user: null } }
         }
       },
+    },
+
+    from(collection: string) {
+      const state: any = { select: null, filters: [], order: null, single: false, data: null, action: 'select' }
+
+      const api: any = {
+        select(sel?: any, opts?: any) {
+          state.select = sel
+          if (opts && opts.count === 'exact') state.count = true
+          return api
+        },
+        eq(field: string, value: any) {
+          state.filters.push({ type: 'eq', field, value })
+          return api
+        },
+        in(field: string, values: any[]) {
+          state.filters.push({ type: 'in', field, value: values })
+          return api
+        },
+        order(field: string, opts?: { ascending?: boolean }) {
+          state.order = { field, ascending: opts?.ascending }
+          return api
+        },
+        limit(n: number) {
+          state.limit = n
+          return api
+        },
+        async single() {
+          state.single = true
+          const r = await remoteExec(collection, state, state.action)
+          // Server's single() already returns { data: singleDoc }, don't index again
+          return { data: r?.data ?? null, error: r?.error ?? null }
+        },
+        insert(doc: any) {
+          state.data = doc
+          state.action = 'insert'
+          return api
+        },
+        update(doc: any) {
+          state.data = doc
+          state.action = 'update'
+          return api
+        },
+        delete() {
+          state.action = 'delete'
+          return api
+        },
+        // Make thenable so `await supabase.from(...).select()` and
+        // `await supabase.from(...).update(...).eq(...)` both work
+        then(resolve: any, reject: any) {
+          remoteExec(collection, state, state.action).then((res) => {
+            resolve(res)
+          }, reject)
+        },
+      }
+
+      return api
     },
   }
 }

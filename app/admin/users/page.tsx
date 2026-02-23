@@ -7,7 +7,6 @@ import { AdminNavbar } from "@/components/admin-navbar"
 export default function UsersPage() {
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -36,7 +35,7 @@ export default function UsersPage() {
     }
 
     loadUsers()
-  }, [supabase])
+  }, [])
 
   return (
     <main className="min-h-screen bg-background">

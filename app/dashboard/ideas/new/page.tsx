@@ -48,6 +48,7 @@ export default function NewIdeaPage() {
   })
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [supportingFiles, setSupportingFiles] = useState<File[]>([])
   const router = useRouter()
   const supabase = createClient()
 
@@ -85,6 +86,7 @@ export default function NewIdeaPage() {
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          status: "submitted",
           title: formData.title,
           problem_statement: formData.problem_statement,
           solution: formData.solution,
@@ -110,6 +112,31 @@ export default function NewIdeaPage() {
 
       const payload = await res.json()
       const created = payload.data
+      // If user selected supporting files before submit, upload them now
+      if (supportingFiles.length > 0) {
+        try {
+          await Promise.all(
+            supportingFiles.map(async (file) => {
+              const formData = new FormData()
+              formData.append("file", file)
+              formData.append("ideaId", created._id)
+
+              const upRes = await fetch("/api/upload", {
+                method: "POST",
+                body: formData,
+              })
+
+              if (!upRes.ok) {
+                const errBody = await upRes.json().catch(() => ({}))
+                console.error("Upload failed for file", file.name, errBody)
+              }
+            }),
+          )
+        } catch (e) {
+          console.error("Error uploading supporting files:", e)
+        }
+      }
+
       router.push(`/dashboard/ideas/${created._id}/edit`)
     } catch (err) {
       // Surface more detailed Supabase/Postgres error info for debugging
@@ -367,6 +394,24 @@ export default function NewIdeaPage() {
                     <option value="MVP">MVP</option>
                     <option value="Market-ready">Market-ready</option>
                   </select>
+                </div>
+                {/* Supporting Documents */}
+                <div>
+                  <Label htmlFor="supporting_documents">Add Supporting Documents</Label>
+                  <input
+                    id="supporting_documents"
+                    name="supporting_documents"
+                    type="file"
+                    multiple
+                    accept=".pdf,.ppt,.pptx,.png,.jpg,.jpeg,.gif,.doc,.docx,video/*,image/*,application/*"
+                    onChange={(e) => {
+                      const files = e.currentTarget.files
+                      if (!files) return
+                      setSupportingFiles(Array.from(files))
+                    }}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">You can upload images, videos, PDFs and documents. Files are uploaded after creating the idea.</p>
                 </div>
 
                 {error && <p className="text-sm text-error">{error}</p>}

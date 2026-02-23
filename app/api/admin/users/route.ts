@@ -1,50 +1,18 @@
 import { NextResponse } from "next/server"
-import { createServerClient } from "@supabase/ssr"
+import { createClient as createServerClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
-import { cookies } from "next/headers"
 
 export async function GET(request: Request) {
   try {
     // Build a cookie list from the incoming request headers to pass to createServerClient
-    const cookieHeader = request.headers.get('cookie') || ''
-    const cookieList = cookieHeader
-      .split(';')
-      .map((c) => c.trim())
-      .filter(Boolean)
-      .map((pair) => {
-        const idx = pair.indexOf('=')
-        if (idx === -1) return { name: pair, value: '' }
-        return { name: pair.slice(0, idx), value: decodeURIComponent(pair.slice(idx + 1)) }
-      })
-
-    const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
-      cookies: {
-        getAll() {
-          return cookieList
-        },
-        setAll() {
-          /* not used */
-        },
-      },
-    })
-
+    const supabase = await createServerClient()
     const userRes = await supabase.auth.getUser()
     const user = userRes?.data?.user
-    if (userRes?.error) {
-      const msg = userRes.error?.message ?? String(userRes.error)
-      return NextResponse.json({ error: `Auth error: ${msg}` }, { status: 401 })
-    }
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { data: profile, error: profileError } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    if (profileError) {
-      return NextResponse.json({ error: `Profile lookup error: ${profileError.message ?? String(profileError)}` }, { status: 500 })
-    }
+    if (profileError) return NextResponse.json({ error: `Profile lookup error: ${profileError?.message ?? String(profileError)}` }, { status: 500 })
     if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.SUPABASE_URL) {
-      return NextResponse.json({ error: "Server misconfiguration: missing SUPABASE_SERVICE_ROLE_KEY or SUPABASE_URL" }, { status: 500 })
-    }
 
     const admin = createAdminClient()
     try {

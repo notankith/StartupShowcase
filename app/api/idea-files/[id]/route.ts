@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server"
 import { getDb } from "@/lib/mongo/client"
+import { ObjectId } from "mongodb"
 import jwt from "jsonwebtoken"
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+function toObjectId(val: string) {
+  try { return new ObjectId(val) } catch { return val as any }
+}
+
+export async function DELETE(req: Request, ctx: any) {
   try {
+    const params = await ctx.params
     const fileId = params.id
     const cookie = req.headers.get("cookie") || ""
     const match = cookie.split(";").map((c) => c.trim()).find((c) => c.startsWith("session="))
@@ -16,11 +22,12 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
 
     const db = await getDb()
     const files = db.collection("idea_files")
-    const file = await files.findOne({ _id: fileId })
+    const oid = toObjectId(fileId)
+    const file = await files.findOne({ _id: oid })
     if (!file) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
     // Optionally verify ownership here if needed
-    await files.deleteOne({ _id: fileId })
+    await files.deleteOne({ _id: oid })
     return NextResponse.json({ ok: true })
   } catch (e: any) {
     return NextResponse.json({ error: String(e) }, { status: 500 })

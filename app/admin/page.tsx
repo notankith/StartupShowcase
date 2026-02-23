@@ -17,11 +17,12 @@ export default function AdminDashboardPage() {
     contactRequests: 0,
   })
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
 
   useEffect(() => {
     const loadStats = async () => {
       try {
+        const supabase = createClient()
+
         const [
           { count: totalIdeas },
           { count: approvedIdeas },
@@ -54,7 +55,7 @@ export default function AdminDashboardPage() {
     }
 
     loadStats()
-  }, [supabase])
+  }, [])
 
   return (
     <main className="min-h-screen bg-background">

@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { signOut } from "@/lib/supabase/auth"
@@ -10,7 +10,7 @@ export function Navbar() {
   const [user, setUser] = useState<any>(null)
   const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   // Return the user object if present (with a few retries), otherwise null
   async function ensureUserPresent() {

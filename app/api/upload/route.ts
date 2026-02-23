@@ -122,17 +122,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Save file metadata to database using the admin client to bypass RLS
-    const { data: fileRecord, error: insertError } = await admin
-      .from("idea_files")
-      .insert({
-        idea_id: ideaId,
-        file_name: file.name,
-        file_type: file.type,
-        file_size: file.size,
-        file_url: fileUrl,
-      })
-      .select()
-      .single()
+    // Our admin client returns a { data, error } shape (Mongo adapter), not a chainable
+    const insertResult = await admin.from("idea_files").insert({
+      idea_id: ideaId,
+      file_name: file.name,
+      file_type: file.type,
+      file_size: file.size,
+      file_url: fileUrl,
+    })
+
+    const fileRecord = insertResult?.data ?? insertResult
+    const insertError = insertResult?.error || null
 
     if (insertError) {
       console.error('Insert error details:', insertError)

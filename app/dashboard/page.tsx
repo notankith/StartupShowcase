@@ -24,10 +24,9 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
   const router = useRouter()
-  const supabase = createClient()
-
   useEffect(() => {
     const loadData = async () => {
+      const supabase = createClient()
       // Fetch current user via server API
       const uRes = await fetch("/api/auth/user", { credentials: "include" })
       if (!uRes.ok) {
@@ -55,7 +54,7 @@ export default function DashboardPage() {
     }
 
     loadData()
-  }, [supabase, router])
+  }, [router])
 
   const deleteIdea = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this idea?")) return

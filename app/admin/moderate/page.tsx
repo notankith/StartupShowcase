@@ -55,7 +55,7 @@ export default function ModerationPage() {
     }
 
     loadPendingIdeas()
-  }, [supabase])
+  }, [])
 
   useEffect(() => {
     const uniqueCategories = Array.from(
@@ -318,6 +318,63 @@ export default function ModerationPage() {
                             <div className="ml-4 text-sm text-muted-foreground">Featured</div>
                             <div className="text-foreground font-medium">{idea.is_featured ? 'Yes' : 'No'}</div>
                           </div>
+                          {/* Additional fields */}
+                          {idea.whatsapp_group_url && (
+                            <div>
+                              <p className="text-sm text-muted-foreground">WhatsApp Group</p>
+                              <a href={idea.whatsapp_group_url} className="text-primary underline" target="_blank" rel="noreferrer">{idea.whatsapp_group_url}</a>
+                            </div>
+                          )}
+
+                          {idea.achievements && (
+                            <div>
+                              <p className="text-sm text-muted-foreground">Achievements</p>
+                              <p className="text-foreground whitespace-pre-wrap">{idea.achievements}</p>
+                            </div>
+                          )}
+
+                          {idea.skills_needed && (idea.skills_needed.length > 0) && (
+                            <div>
+                              <p className="text-sm text-muted-foreground">Skills Needed</p>
+                              <p className="text-foreground">{(idea.skills_needed || []).join(', ')}</p>
+                            </div>
+                          )}
+
+                          {idea.call_to_action && (
+                            <div>
+                              <p className="text-sm text-muted-foreground">Call To Action</p>
+                              <p className="text-foreground">{idea.call_to_action}</p>
+                            </div>
+                          )}
+
+                          {idea.founder_program && (
+                            <div>
+                              <p className="text-sm text-muted-foreground">Founder Program</p>
+                              <p className="text-foreground">{idea.founder_program}</p>
+                            </div>
+                          )}
+
+                          {idea.logo_url && (
+                            <div>
+                              <p className="text-sm text-muted-foreground">Logo</p>
+                              <img src={idea.logo_url} alt="logo" className="max-h-24 mt-2" />
+                            </div>
+                          )}
+
+                          {/* Supporting files */}
+                          {idea.files && idea.files.length > 0 && (
+                            <div>
+                              <p className="text-sm text-muted-foreground">Supporting Files</p>
+                              <ul className="list-disc pl-5">
+                                {idea.files.map((f: any) => (
+                                  <li key={f.id || f._id} className="text-foreground">
+                                    <a href={f.file_url} target="_blank" rel="noreferrer" className="text-primary underline">{f.file_name}</a>
+                                    <span className="text-xs text-muted-foreground"> &nbsp;({f.file_type}, {(f.file_size || 0) + ' bytes'})</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
 
                           {/* Files preview */}
                           {idea.idea_files && idea.idea_files.length > 0 && (

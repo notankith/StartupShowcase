@@ -41,7 +41,10 @@ export async function POST(req: Request) {
       }
 
       const r = await ideas.insertOne(doc)
-      const created = await ideas.findOne({ _id: r.insertedId })
+      let created = await ideas.findOne({ _id: r.insertedId })
+      if (created) {
+        (created as any).id = String((created as any)._id)
+      }
       return NextResponse.json({ data: created })
     } catch (e: any) {
       return NextResponse.json({ error: String(e) }, { status: 401 })
@@ -66,7 +69,8 @@ export async function GET(req: Request) {
     const ideas = db.collection("ideas")
 
     const rows = await ideas.find({ user_id: user.id }).sort({ created_at: -1 }).toArray()
-    return NextResponse.json({ data: rows })
+    const out = rows.map((r) => ({ ...(r as any), id: String((r as any)._id) }))
+    return NextResponse.json({ data: out })
   } catch (e: any) {
     return NextResponse.json({ error: String(e) }, { status: 500 })
   }

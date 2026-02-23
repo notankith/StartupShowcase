@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server"
 import { getDb } from "@/lib/mongo/client"
+import { ObjectId } from "mongodb"
 import jwt from "jsonwebtoken"
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+function toObjectId(val: string) {
+  try { return new ObjectId(val) } catch { return val as any }
+}
+
+export async function GET(req: Request, ctx: any) {
   try {
+    const params = await ctx.params
     const id = params.id
     const cookie = req.headers.get("cookie") || ""
     const match = cookie.split(";").map((c) => c.trim()).find((c) => c.startsWith("session="))
@@ -18,19 +24,21 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     const ideas = db.collection("ideas")
     const files = db.collection("idea_files")
 
-    const idea = await ideas.findOne({ _id: id })
+    const oid = toObjectId(id)
+    const idea = await ideas.findOne({ _id: oid })
     if (!idea) return NextResponse.json({ error: "Not found" }, { status: 404 })
     if (String(idea.user_id) !== String(user.id)) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
     const ideaFiles = await files.find({ idea_id: id }).toArray()
-    return NextResponse.json({ data: { idea, files: ideaFiles } })
+    return NextResponse.json({ data: { idea: { ...idea, id: String(idea._id) }, files: ideaFiles } })
   } catch (e: any) {
     return NextResponse.json({ error: String(e) }, { status: 500 })
   }
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, ctx: any) {
   try {
+    const params = await ctx.params
     const id = params.id
     const body = await req.json()
     const cookie = req.headers.get("cookie") || ""
@@ -45,7 +53,8 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     const db = await getDb()
     const ideas = db.collection("ideas")
 
-    const idea = await ideas.findOne({ _id: id })
+    const oid = toObjectId(id)
+    const idea = await ideas.findOne({ _id: oid })
     if (!idea) return NextResponse.json({ error: "Not found" }, { status: 404 })
     if (String(idea.user_id) !== String(user.id)) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
@@ -67,16 +76,17 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     if (body.logo_url !== undefined) update.logo_url = body.logo_url
     if (body.stage !== undefined) update.stage = body.stage
 
-    await ideas.updateOne({ _id: id }, { $set: update })
-    const updated = await ideas.findOne({ _id: id })
-    return NextResponse.json({ data: updated })
+    await ideas.updateOne({ _id: oid }, { $set: update })
+    const updated = await ideas.findOne({ _id: oid })
+    return NextResponse.json({ data: updated ? { ...updated, id: String(updated._id) } : null })
   } catch (e: any) {
     return NextResponse.json({ error: String(e) }, { status: 500 })
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, ctx: any) {
   try {
+    const params = await ctx.params
     const id = params.id
     const cookie = req.headers.get("cookie") || ""
     const match = cookie.split(";").map((c) => c.trim()).find((c) => c.startsWith("session="))
@@ -90,11 +100,12 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     const db = await getDb()
     const ideas = db.collection("ideas")
 
-    const idea = await ideas.findOne({ _id: id })
+    const oid = toObjectId(id)
+    const idea = await ideas.findOne({ _id: oid })
     if (!idea) return NextResponse.json({ error: "Not found" }, { status: 404 })
     if (String(idea.user_id) !== String(user.id)) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
-    await ideas.deleteOne({ _id: id })
+    await ideas.deleteOne({ _id: oid })
     return NextResponse.json({ data: { deleted: true } })
   } catch (e: any) {
     return NextResponse.json({ error: String(e) }, { status: 500 })

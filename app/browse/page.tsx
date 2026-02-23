@@ -31,11 +31,10 @@ export default function BrowsePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
 
-  const supabase = createClient()
-
   useEffect(() => {
     const fetchIdeas = async () => {
       setLoading(true)
+      const supabase = createClient()
       const { data, error } = await supabase
         .from("ideas")
         .select("*")
@@ -52,7 +51,7 @@ export default function BrowsePage() {
     }
 
     fetchIdeas()
-  }, [supabase])
+  }, [])
 
   useEffect(() => {
     let result = ideas

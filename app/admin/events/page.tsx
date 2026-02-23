@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
-import { Navbar } from "@/components/navbar"
+import { AdminNavbar } from "@/components/admin-navbar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 export default function AdminEventsPage() {
-  const supabase = createClient()
   const router = useRouter()
   const [events, setEvents] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -17,6 +16,7 @@ export default function AdminEventsPage() {
 
   useEffect(() => {
     const load = async () => {
+      const supabase = createClient()
       try {
         // Ensure admin
         const { data: { user } } = await supabase.auth.getUser()
@@ -38,11 +38,11 @@ export default function AdminEventsPage() {
       }
     }
     load()
-  }, [supabase, router])
+  }, [router])
 
   return (
     <main className="min-h-screen bg-background">
-      <Navbar />
+      <AdminNavbar />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-semibold">Manage Events</h1>
