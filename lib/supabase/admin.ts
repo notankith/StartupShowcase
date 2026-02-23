@@ -49,7 +49,8 @@ export function createAdminClient() {
             return { error: null }
           },
           getPublicUrl(path: string) {
-            return { data: { publicUrl: r2.getPublicUrl(path) } }
+            const url = r2.getPublicUrl(path)
+            return { data: { publicUrl: url } }
           },
           async createSignedUrl(path: string, expires: number) {
             const url = await r2.createSignedUrlR2(path, expires)

@@ -1,15 +1,16 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { Navbar } from "@/components/navbar"
+import { AdminNavbar } from "@/components/admin-navbar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 export default function EditEventPage({ params }: { params: any }) {
+  const unwrappedParams = typeof (React as any).use === "function" ? (React as any).use(params) : params
   const supabase = createClient()
   const router = useRouter()
   const [form, setForm] = useState({
@@ -28,7 +29,8 @@ export default function EditEventPage({ params }: { params: any }) {
   useEffect(() => {
     const load = async () => {
       try {
-        const id = typeof params?.then === 'function' ? await params.then((p: any) => p.id) : params.id
+        const supabase = createClient()
+        const id = unwrappedParams.id
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return router.push('/auth/login')
         const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
@@ -52,7 +54,7 @@ export default function EditEventPage({ params }: { params: any }) {
       }
     }
     load()
-  }, [params, supabase, router])
+  }, [unwrappedParams.id, router])
 
   const handleChange = (e: any) => {
     const { name, value, type, checked } = e.target
@@ -64,7 +66,7 @@ export default function EditEventPage({ params }: { params: any }) {
     setSubmitting(true)
     setError(null)
     try {
-      const id = typeof params?.then === 'function' ? await params.then((p: any) => p.id) : params.id
+      const id = unwrappedParams.id
       const isoDate = form.event_date ? new Date(form.event_date).toISOString() : null
       const { error } = await supabase.from('events').update({
         title: form.title,
@@ -87,7 +89,7 @@ export default function EditEventPage({ params }: { params: any }) {
 
   return (
     <main className="min-h-screen bg-background">
-      <Navbar />
+      <AdminNavbar />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <Card>
           <CardHeader>

@@ -112,14 +112,15 @@ export default function NewIdeaPage() {
 
       const payload = await res.json()
       const created = payload.data
+      const ideaId = created?.id || created?._id
       // If user selected supporting files before submit, upload them now
-      if (supportingFiles.length > 0) {
+      if (supportingFiles.length > 0 && ideaId) {
         try {
           await Promise.all(
             supportingFiles.map(async (file) => {
               const formData = new FormData()
               formData.append("file", file)
-              formData.append("ideaId", created._id)
+              formData.append("ideaId", ideaId)
 
               const upRes = await fetch("/api/upload", {
                 method: "POST",
@@ -137,27 +138,13 @@ export default function NewIdeaPage() {
         }
       }
 
-      router.push(`/dashboard/ideas/${created._id}/edit`)
+      router.push("/dashboard")
     } catch (err) {
-      // Surface more detailed Supabase/Postgres error info for debugging
       console.error("Create idea failed:", err)
-      let message = "Failed to create idea"
+      let message = "Failed to submit idea"
       if (err && typeof err === "object") {
         const anyErr = err as any
         if (typeof anyErr.message === "string") message = anyErr.message
-        // Include details if available (PostgrestError provides details property)
-        if (typeof anyErr.details === "string" && anyErr.details.length) {
-          message += `: ${anyErr.details}`
-        }
-        if (typeof anyErr.hint === "string" && anyErr.hint.length) {
-          message += ` (Hint: ${anyErr.hint})`
-        }
-        if (typeof anyErr.code === "string" && anyErr.code.length) {
-          message += ` [Code: ${anyErr.code}]`
-          if (anyErr.code === 'PGRST204') {
-            message += `\nFix: Run migration in Supabase SQL Editor -> ALTER TABLE public.ideas ADD COLUMN IF NOT EXISTS whatsapp_group_url TEXT; then in Dashboard Settings > API click 'Reload schema cache'.`
-          }
-        }
       }
       setError(message)
     } finally {
@@ -178,8 +165,8 @@ export default function NewIdeaPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-3xl">Create New Idea</CardTitle>
-              <CardDescription>Share your startup idea with the community</CardDescription>
+              <CardTitle className="text-3xl">Submit Your Idea</CardTitle>
+              <CardDescription>Fill in all fields, attach any supporting documents, and submit for review</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -411,14 +398,14 @@ export default function NewIdeaPage() {
                     }}
                     className="w-full"
                   />
-                  <p className="text-xs text-muted-foreground mt-2">You can upload images, videos, PDFs and documents. Files are uploaded after creating the idea.</p>
+                  <p className="text-xs text-muted-foreground mt-2">You can upload images, videos, PDFs and documents. Files will be uploaded when you submit.</p>
                 </div>
 
                 {error && <p className="text-sm text-error">{error}</p>}
 
                 <div className="flex gap-3">
                   <Button type="submit" disabled={isLoading} className="flex-1">
-                    {isLoading ? "Creating..." : "Create Idea"}
+                    {isLoading ? "Submitting..." : "Submit Idea"}
                   </Button>
                   <Button type="button" variant="outline" onClick={() => router.push("/dashboard")} className="flex-1">
                     Cancel

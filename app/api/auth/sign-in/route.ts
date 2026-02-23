@@ -49,13 +49,17 @@ export async function POST(req: Request) {
     const maxAge = 60 * 60 * 24 * 7 // 7 days in seconds
     const token = jwt.sign({ user: payloadUser }, secret, { expiresIn: maxAge })
 
-    const res = NextResponse.redirect(new URL(redirectTo, req.url))
     const secure = process.env.NODE_ENV === "production"
-    if (process.env.DEBUG_AUTH === 'true') {
-      const secretPresent = !!process.env.JWT_SECRET
-      const maskedSecret = process.env.JWT_SECRET ? `${String(process.env.JWT_SECRET).slice(0,4)}***` : null
-      console.log('[auth/sign-in] setting session cookie; secretPresent=', secretPresent, 'secretPrefix=', maskedSecret, 'secure=', secure)
-    }
+
+    // If the request came as JSON (from fetch), return a JSON response with
+    // Set-Cookie so the browser can follow up with a client-side redirect.
+    const ct = req.headers.get("content-type") || ""
+    const isJsonRequest = ct.includes("application/json")
+
+    const res = isJsonRequest
+      ? NextResponse.json({ ok: true, redirectTo })
+      : NextResponse.redirect(new URL(redirectTo, req.url))
+
     // Set httpOnly cookie so server-rendered pages can read session on next request
     res.cookies.set("session", token, {
       httpOnly: true,
@@ -64,9 +68,7 @@ export async function POST(req: Request) {
       secure,
       maxAge,
     })
-    if (process.env.DEBUG_AUTH === 'true') console.log('[auth/sign-in] Set-Cookie: session (httpOnly) set with path=/ sameSite=lax secure=' + secure)
-    // Development-only: also set a non-httpOnly debug cookie so the browser
-    // DevTools can show the cookie and we can confirm the browser received it.
+    // Development-only: also set a non-httpOnly debug cookie
     if (process.env.NODE_ENV !== "production") {
       try {
         res.cookies.set("session_debug", token, {
@@ -76,10 +78,7 @@ export async function POST(req: Request) {
           secure: false,
           maxAge,
         })
-        if (process.env.DEBUG_AUTH === 'true') console.log('[auth/sign-in] Set-Cookie: session_debug (dev, non-httpOnly) set')
-      } catch (e) {
-        if (process.env.DEBUG_AUTH === 'true') console.log('[auth/sign-in] failed to set session_debug', String(e))
-      }
+      } catch (e) {}
     }
     return res
   } catch (err: any) {

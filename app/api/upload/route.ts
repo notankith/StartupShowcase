@@ -108,9 +108,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: message }, { status: 500 })
     }
 
-    // Get public URL (Supabase storage public settings apply)
+    // Get public URL — store the R2 key-based URL in the database.
+    // For actual file access, the frontend uses /api/files/signed to get a
+    // time-limited signed URL.
     const pub = admin.storage.from(bucket).getPublicUrl(filename)
-    const fileUrl = (pub?.data?.publicUrl) || (typeof pub === 'string' ? pub : await pub)
+    const fileUrl = pub?.data?.publicUrl || ''
 
     // Safety: ensure we never persist data: (base64) URLs. If storage client
     // unexpectedly returns a data: URL (shouldn't for Supabase Storage public

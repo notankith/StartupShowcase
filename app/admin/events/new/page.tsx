@@ -3,14 +3,13 @@
 import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { Navbar } from "@/components/navbar"
+import { AdminNavbar } from "@/components/admin-navbar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 export default function NewEventPage() {
-  const supabase = createClient()
   const router = useRouter()
   const [form, setForm] = useState({
     title: "",
@@ -34,6 +33,7 @@ export default function NewEventPage() {
     setSubmitting(true)
     setError(null)
     try {
+      const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return router.push('/auth/login')
       const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
@@ -61,7 +61,7 @@ export default function NewEventPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      <Navbar />
+      <AdminNavbar />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <Card>
           <CardHeader>

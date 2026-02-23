@@ -367,9 +367,10 @@ export default function ModerationPage() {
                               <p className="text-sm text-muted-foreground">Supporting Files</p>
                               <ul className="list-disc pl-5">
                                 {idea.files.map((f: any) => (
-                                  <li key={f.id || f._id} className="text-foreground">
-                                    <a href={f.file_url} target="_blank" rel="noreferrer" className="text-primary underline">{f.file_name}</a>
-                                    <span className="text-xs text-muted-foreground"> &nbsp;({f.file_type}, {(f.file_size || 0) + ' bytes'})</span>
+                                  <li key={f.id || f._id} className="text-foreground flex items-center gap-2">
+                                    <span>{f.file_name}</span>
+                                    <span className="text-xs text-muted-foreground">({f.file_type}, {(f.file_size || 0)} bytes)</span>
+                                    <FileOpener url={f.file_url} name={f.file_name} ideaId={idea.id || idea._id} />
                                   </li>
                                 ))}
                               </ul>
@@ -410,7 +411,7 @@ export default function ModerationPage() {
                                       </div>
 
                                       <div className="mt-3 flex justify-end">
-                                        <FileOpener url={file.file_url} name={file.file_name} />
+                                        <FileOpener url={file.file_url} name={file.file_name} ideaId={idea.id || idea._id} />
                                       </div>
                                       
                                     </div>
