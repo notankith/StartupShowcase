@@ -76,10 +76,10 @@ export default function AdminDashboardPage() {
             <>
               {/* Stats Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-                <Card>
+                <Card className="card-hover">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <TrendingUp className="w-4 h-4 text-primary" />
+                      <TrendingUp className="w-4 h-4 text-emerald-600" />
                       Total Ideas
                     </CardTitle>
                   </CardHeader>
@@ -88,7 +88,7 @@ export default function AdminDashboardPage() {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="card-hover">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium flex items-center gap-2">
                       <CheckCircle className="w-4 h-4 text-success" />
@@ -105,7 +105,7 @@ export default function AdminDashboardPage() {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="card-hover">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium flex items-center gap-2">
                       <Clock className="w-4 h-4 text-orange-500" />
@@ -117,10 +117,10 @@ export default function AdminDashboardPage() {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="card-hover">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium flex items-center gap-2 text-black">
-                      <Eye className="w-4 h-4 text-accent" />
+                      <Eye className="w-4 h-4 text-violet-500" />
                       Featured Ideas
                     </CardTitle>
                   </CardHeader>
@@ -129,7 +129,7 @@ export default function AdminDashboardPage() {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="card-hover">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium">Total Users</CardTitle>
                   </CardHeader>
@@ -138,7 +138,7 @@ export default function AdminDashboardPage() {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="card-hover">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium">Contact Requests</CardTitle>
                   </CardHeader>

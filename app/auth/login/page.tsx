@@ -47,10 +47,16 @@ export default function LoginPage() {
 
   return (
     <div className="w-full max-w-sm">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Log In</CardTitle>
-          <CardDescription>Enter your credentials to access your dashboard</CardDescription>
+      <Card className="border-border/40 shadow-xl shadow-black/5 rounded-2xl overflow-hidden">
+        <div className="h-1 bg-gradient-to-r from-emerald-500 to-teal-400" />
+        <CardHeader className="text-center pb-2">
+          <div className="mx-auto w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mb-3">
+            <svg className="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+          <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
+          <CardDescription>Enter your credentials to continue</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
@@ -67,12 +73,12 @@ export default function LoginPage() {
                 {error}
               </p>
             )}
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl py-5 font-semibold shadow-lg shadow-emerald-600/20 transition-all duration-200" disabled={loading}>
               {loading ? "Logging in..." : "Log In"}
             </Button>
-            <div className="text-center text-sm">
+            <div className="text-center text-sm text-foreground/60">
               Don&apos;t have an account? {" "}
-              <Link href="/auth/sign-up" className="text-primary hover:underline">Sign up</Link>
+              <Link href="/auth/sign-up" className="text-emerald-600 hover:text-emerald-700 font-medium">Sign up</Link>
             </div>
           </form>
         </CardContent>

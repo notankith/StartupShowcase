@@ -100,22 +100,29 @@ export default function BrowsePage() {
       <div className="px-4 sm:px-6 lg:px-8 py-12">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="mb-12">
-            <h1 className="text-4xl font-bold text-foreground mb-2">Browse Startup Ideas</h1>
-            <p className="text-muted-foreground">
+          <div className="mb-12 animate-fade-in-up">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100/80 text-emerald-700 text-xs font-semibold tracking-wide uppercase mb-4">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Explore
+            </div>
+            <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-foreground mb-3">
+              Browse Startup{" "}
+              <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">Ideas</span>
+            </h1>
+            <p className="text-lg text-foreground/60 max-w-lg">
               Discover innovative ideas from our community of student entrepreneurs
             </p>
           </div>
 
           {/* Search Bar */}
-          <div className="mb-8 relative">
+          <div className="mb-8 relative animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
               type="text"
               placeholder="Search by title or problem..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 py-6 text-base"
+              className="pl-10 py-6 text-base rounded-xl border-border/60 focus:border-emerald-500 focus:ring-emerald-500/20"
             />
           </div>
 
@@ -146,7 +153,7 @@ export default function BrowsePage() {
 
               {loading ? (
                 <div className="flex items-center justify-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
                 </div>
               ) : filteredIdeas.length > 0 ? (
                 <>
@@ -237,10 +244,10 @@ export default function BrowsePage() {
                       <button
                         key={tag}
                         onClick={() => toggleTag(tag)}
-                        className={`text-xs px-3 py-1.5 rounded-full transition ${
+                        className={`text-xs px-3 py-1.5 rounded-full transition-all duration-200 ${
                           selectedTags.includes(tag)
-                            ? "bg-primary text-white"
-                            : "bg-muted text-foreground hover:bg-muted/80"
+                            ? "bg-emerald-600 text-white shadow-sm"
+                            : "bg-muted text-foreground hover:bg-emerald-50 hover:text-emerald-700"
                         }`}
                       >
                         #{tag}

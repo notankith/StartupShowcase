@@ -116,13 +116,13 @@ export default function DashboardPage() {
 
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <Card>
+            <Card className="card-hover">
               <CardContent className="pt-6">
-                <div className="text-3xl font-bold text-primary">{ideas.length}</div>
+                <div className="text-3xl font-bold text-emerald-600">{ideas.length}</div>
                 <p className="text-sm text-muted-foreground">Total Ideas</p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="card-hover">
               <CardContent className="pt-6">
                 <div className="text-3xl font-bold text-blue-500">
                   {ideas.filter((i) => i.status === "draft").length}
@@ -130,7 +130,7 @@ export default function DashboardPage() {
                 <p className="text-sm text-muted-foreground">Drafts</p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="card-hover">
               <CardContent className="pt-6">
                 <div className="text-3xl font-bold text-success">
                   {ideas.filter((i) => i.status === "approved").length}
@@ -138,7 +138,7 @@ export default function DashboardPage() {
                 <p className="text-sm text-muted-foreground">Approved</p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="card-hover">
               <CardContent className="pt-6">
                 <div className="text-3xl font-bold text-orange-500">
                   {ideas.filter((i) => i.status === "submitted").length}
@@ -156,7 +156,7 @@ export default function DashboardPage() {
           ) : ideas.length > 0 ? (
             <div className="space-y-4">
               {ideas.map((idea) => (
-                <Card key={idea.id} className="hover:shadow-lg transition">
+                <Card key={idea.id} className="card-hover">
                   <CardContent className="pt-6">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                       <div className="flex-1">

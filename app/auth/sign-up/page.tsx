@@ -61,9 +61,15 @@ export default function SignUpPage() {
 
   return (
     <div className="w-full max-w-sm">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Create Account</CardTitle>
+      <Card className="border-border/40 shadow-xl shadow-black/5 rounded-2xl overflow-hidden">
+        <div className="h-1 bg-gradient-to-r from-emerald-500 to-teal-400" />
+        <CardHeader className="text-center pb-2">
+          <div className="mx-auto w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mb-3">
+            <svg className="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+          </div>
+          <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
           <CardDescription>Join our community of student innovators</CardDescription>
         </CardHeader>
         <CardContent>
@@ -110,13 +116,13 @@ export default function SignUpPage() {
                 required
               />
             </div>
-            {error && <p className="text-sm text-error">{error}</p>}
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            {error && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">{error}</p>}
+            <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl py-5 font-semibold shadow-lg shadow-emerald-600/20 transition-all duration-200" disabled={isLoading}>
               {isLoading ? "Creating account..." : "Sign Up"}
             </Button>
-            <div className="text-center text-sm">
+            <div className="text-center text-sm text-foreground/60">
               Already have an account?{" "}
-              <Link href="/auth/login" className="text-primary hover:underline">
+              <Link href="/auth/login" className="text-emerald-600 hover:text-emerald-700 font-medium">
                 Log in
               </Link>
             </div>
