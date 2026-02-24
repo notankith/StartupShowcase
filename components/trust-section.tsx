@@ -14,8 +14,11 @@ export function TrustSection() {
   const [ref, visible] = useScrollReveal<HTMLDivElement>(0.2)
 
   return (
-    <section ref={ref} className="px-4 sm:px-6 lg:px-8 py-16 md:py-20">
+    <section ref={ref} className="px-4 sm:px-6 lg:px-8 py-16 md:py-20 border-b border-border/30">
       <div className="max-w-5xl mx-auto">
+        <p className={`text-center text-sm text-foreground/50 font-medium tracking-wide mb-8 transition-all duration-500 ease-out ${
+          visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+        }`}>Trusted by students and mentors across disciplines</p>
         <div
           className={`grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 transition-all duration-700 ease-out ${
             visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"

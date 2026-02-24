@@ -27,30 +27,32 @@ export function HeroSection({ user }: { user: any }) {
               Now accepting ideas
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.1] tracking-tight text-foreground">
-              The startup{" "}
-              <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
-                launch partner
-              </span>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-[4.25rem] font-extrabold leading-[1.08] tracking-tight text-foreground">
+              The startup{" "}<br className="hidden sm:block" />
+              experience{" "}<br className="hidden lg:block" />
+              <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent font-black">
+                transformation
+              </span>{" "}
+              partner
             </h1>
 
-            <p className="text-lg sm:text-xl text-foreground/60 max-w-lg leading-relaxed">
-              Helping students turn ideas into real products with mentors, builders, and execution.
+            <p className="text-lg sm:text-xl text-foreground/55 max-w-xl leading-relaxed">
+              GCUIF accelerates innovation and real-world execution with AI-fueled mentorship, expert teams, and hands-on support.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <Link
                 href={user ? "/dashboard/ideas/new" : "/auth/sign-up"}
-                className="inline-flex items-center justify-center px-7 py-3 text-sm font-semibold rounded-full bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 hover:shadow-xl hover:shadow-emerald-600/30 transition-all duration-200 hover:-translate-y-0.5"
+                className="inline-flex items-center justify-center gap-2 px-8 py-3.5 text-sm font-semibold rounded-full bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 hover:shadow-xl hover:shadow-emerald-600/30 transition-all duration-200 hover:-translate-y-0.5"
               >
-                Submit your idea
-                <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                Submit your idea!
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
               </Link>
               <Link
                 href="/browse"
-                className="inline-flex items-center justify-center px-7 py-3 text-sm font-semibold rounded-full text-foreground/70 hover:text-foreground border border-border/60 hover:border-border hover:bg-foreground/5 transition-all duration-200"
+                className="inline-flex items-center justify-center px-8 py-3.5 text-sm font-semibold rounded-full text-foreground/70 hover:text-foreground border border-border/60 hover:border-border hover:bg-foreground/5 transition-all duration-200"
               >
                 View Startups
               </Link>

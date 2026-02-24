@@ -60,7 +60,7 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="w-full max-w-sm">
+    <div className="w-full max-w-md">
       <Card className="border-border/40 shadow-xl shadow-black/5 rounded-2xl overflow-hidden">
         <div className="h-1 bg-gradient-to-r from-emerald-500 to-teal-400" />
         <CardHeader className="text-center pb-2">
@@ -72,8 +72,8 @@ export default function SignUpPage() {
           <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
           <CardDescription>Join our community of student innovators</CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSignUp} className="flex flex-col gap-6">
+        <CardContent className="px-8 pb-8">
+          <form onSubmit={handleSignUp} className="flex flex-col gap-5">
             <div className="grid gap-2">
               <Label htmlFor="fullName">Full Name</Label>
               <Input
@@ -83,6 +83,7 @@ export default function SignUpPage() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
+                className="h-11"
               />
             </div>
             <div className="grid gap-2">
@@ -94,6 +95,7 @@ export default function SignUpPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="h-11"
               />
             </div>
             <div className="grid gap-2">
@@ -104,6 +106,7 @@ export default function SignUpPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="h-11"
               />
             </div>
             <div className="grid gap-2">
@@ -114,6 +117,7 @@ export default function SignUpPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
+                className="h-11"
               />
             </div>
             {error && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">{error}</p>}

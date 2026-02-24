@@ -73,18 +73,18 @@ export function Navbar() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-18">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group">
+          <Link href="/" className="flex items-center gap-3 group">
             <Image
               src="/placeholder-logo.png"
               alt="Logo"
-              width={36}
-              height={36}
-              className="rounded-lg transition-transform duration-200 group-hover:scale-105"
+              width={48}
+              height={48}
+              className="rounded-xl transition-transform duration-200 group-hover:scale-105"
             />
-            <span className="font-bold text-lg text-foreground tracking-tight hidden sm:inline">
-              StartupShowcase
+            <span className="font-bold text-xl text-foreground tracking-tight hidden sm:inline">
+              GCUIF
             </span>
           </Link>
 
@@ -139,9 +139,12 @@ export function Navbar() {
             <a
               href="/dashboard/ideas/new"
               onClick={handleSubmitIdea}
-              className="px-5 py-2 text-sm font-semibold rounded-full bg-emerald-100 text-emerald-700 hover:bg-emerald-200 hover:shadow-md transition-all duration-200 cursor-pointer"
+              className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-full border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white hover:shadow-lg transition-all duration-200 cursor-pointer"
             >
               Submit your idea
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
             </a>
           </div>
 
@@ -213,9 +216,12 @@ export function Navbar() {
           <a
             href="/dashboard/ideas/new"
             onClick={(e) => { setIsOpen(false); handleSubmitIdea(e); }}
-            className="block w-full text-center mt-2 px-5 py-2.5 text-sm font-semibold rounded-full bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition cursor-pointer"
+            className="flex items-center justify-center gap-2 w-full text-center mt-2 px-5 py-2.5 text-sm font-semibold rounded-full border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-all duration-200 cursor-pointer"
           >
             Submit your idea
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
           </a>
         </div>
       </div>
